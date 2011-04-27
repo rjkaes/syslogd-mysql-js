@@ -23,9 +23,7 @@ Server = (require "./server").Server
 Storage = (require "./storage").Storage
 
 storage = new Storage { user: "root", password: "" }
-
-SYSLOG_PORT = 514
-server = new Server(SYSLOG_PORT)
+server = new Server()
 
 server.on "syslog", (syslog, rinfo) -> storage.record syslog, rinfo
 
