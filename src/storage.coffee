@@ -59,21 +59,25 @@ class Storage
 
         @client.query """
         CREATE TABLE `#{date}` (
-            submitted_at    TIME NOT NULL,
+            id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            reported_at     DATETIME NOT NULL, -- datetime reported by device
             received_at     DATETIME NOT NULL,
             severity        ENUM(#{severity}) NOT NULL,
             facility        ENUM(#{facility}) NOT NULL,
             address         INT UNSIGNED NOT NULL,
-            hostname        VARCHAR(255) NOT NULL,
-            message         TEXT NOT NULL
+            hostname        VARCHAR(64) NOT NULL,
+            message         TEXT NOT NULL,
+
+            INDEX (reported_at),
+            INDEX (address)
         )
         """
 
 
     record: (syslog, rinfo, received_at = new Date()) ->
-        sql = "INSERT INTO `#{ymd(syslog.time)}` (submitted_at, received_at, address, hostname, severity, facility, message) VALUES (?, ?, INET_ATON(?), ?, ?, ?, ?)"
+        sql = "INSERT INTO `#{ymd(syslog.time)}` (reported_at, received_at, address, hostname, severity, facility, message) VALUES (?, ?, INET_ATON(?), ?, ?, ?, ?)"
         params = [
-            hms(syslog.time),
+            dts(syslog.time),
             dts(received_at),
             rinfo.address,
             syslog.hostname or "[unknown]",
