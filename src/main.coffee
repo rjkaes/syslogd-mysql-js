@@ -19,21 +19,10 @@
 
 ###
 
-util   = require "util"
-dgram  = require "dgram"
+Server = (require "./server").Server
 
-syslog  = require "./syslog"
-Storage = (require "./storage").Storage
+SYSLOG_PORT = 514
+server = new Server(SYSLOG_PORT)
+server.startListening()
 
-exports.Server = class Server
-    constructor: (@port) ->
-        @storage = new Storage { user: "root", password: "" }
-        @udp = dgram.createSocket "udp4"
-        @udp.on "message", (msg, rinfo) =>
-            try
-                @storage.record (syslog.parse msg), rinfo
-            catch error
-                util.log "Invalid datagram received from #{rinfo.address}:#{rinfo.port} (#{error})"
 
-    startListening: ->
-        @udp.bind @port
