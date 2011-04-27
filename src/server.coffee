@@ -19,19 +19,17 @@
 
 ###
 
-util   = require "util"
-dgram  = require "dgram"
+util         = require "util"
+dgram        = require "dgram"
+EventEmitter = (require "events").EventEmitter
+syslog       = require "./syslog"
 
-syslog  = require "./syslog"
-Storage = (require "./storage").Storage
-
-exports.Server = class Server
+exports.Server = class Server extends EventEmitter
     constructor: (@port) ->
-        @storage = new Storage { user: "root", password: "" }
         @udp = dgram.createSocket "udp4"
         @udp.on "message", (msg, rinfo) =>
             try
-                @storage.record (syslog.parse msg), rinfo
+                @emit "syslog", (syslog.parse msg), rinfo
             catch error
                 util.log "Invalid datagram received from #{rinfo.address}:#{rinfo.port} (#{error})"
 
